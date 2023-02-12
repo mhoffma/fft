@@ -20,9 +20,9 @@ fn brev<T: Clone>(a: &[T]) -> Vec<T> {
     brevidxs(a.len()).iter().map(|i| a[*i].clone()).collect()
 }
 
-fn fft(x: &mut Array1<Complex<f64>>) -> &Array1<Complex<f64>> {
+fn fft(y: &Array1<Complex<f64>>) -> Array1<Complex<f64>> {
+    let mut x = y.clone();
     let n = x.len();
-    //let mut x = y.clone();
     let nstages = logb(n);
     for m in 0..nstages {
         let w = Array::from_iter((0..n / 2).map(|k| {
@@ -38,20 +38,20 @@ fn fft(x: &mut Array1<Complex<f64>>) -> &Array1<Complex<f64>> {
         x.slice_mut(s![0..;2]).assign(&(e + o));
         x.slice_mut(s![1..;2]).assign(&(e - o));
     }
-    x
+    x.select(Axis(0), &brevidxs(n))
 }
 
 #[test]
 fn test_func() {
-    let mut a = Array::from_iter((0..8).map(|x| Complex::new(1.0, 0.0)));
+    let mut a = Array::from_iter((0..8).map(|_| Complex::new(1.0, 0.0)));
     println!("{a:?}");
-    let r = fft(&mut a);
+    let r = fft(&a);
     assert_eq!(r[0].re, 8.0);
 }
 fn main() {
     println!("Hello, world!");
-    let mut a = Array::from_iter((0..8).map(|x| Complex::new(1.0, 0.0)));
+    let a = Array::from_iter((0..8).map(|_| Complex::new(1.0, 0.0)));
     println!("{a:?}");
-    let r = fft(&mut a);
+    let r = fft(&a);
     println!("{r:?}");
 }
